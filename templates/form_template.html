@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Запись</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script>
+    var t;
+    function refreshProgress()
+    {
+        var client = new XMLHttpRequest();
+        client.open("GET", "/progress", true);
+        client.send();
+        client.onreadystatechange = function() {
+            if (client.readyState==4 && client.status==200 && client.responseText.length > 0)
+            {
+              var values = client.responseText.split("/n");
+              var output;
+              if (parseInt(values[1]) < 100) {
+                output = "Progress: " + values[1] + " %";
+              }
+              else {
+                output = "<a href='" + values[0] + "''>Link to the file</a>";
+                clearInterval(t);
+              }
+              document.getElementById("progress").innerHTML = output;
+            }
+        }
+    }
+
+       function uploadFile() 
+       {
+          var client = new XMLHttpRequest();
+          client.open("POST", "/", true);
+          var file = document.getElementById("upload");
+          var formData = new FormData();
+          formData.append("upload", file.files[0]);
+          client.send(formData);
+          t = setInterval(function(){ refreshProgress() }, 200);
+        }
+       
+</script>
+</head>
+<body>
+    <form id="upload_form" method="post" enctype="multipart/form-data">
+        Upload file: <input type="file" name="upload" id="upload"><br>
+        <button type="button" onclick='uploadFile()'>Upload</button>
+    </form>
+    <b><span id='progress'></span></b>
+</body>
+</html>
